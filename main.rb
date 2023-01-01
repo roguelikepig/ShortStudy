@@ -1,112 +1,127 @@
 class Player
-	attr_accessor :name, :life, :defence, :hand, :mana, :maxmana
+	attr_accessor :name, :life, :defence, :hand, :mana, :maxMana
 	def initialize(name)
 		@name = name
-		@maxlife = 0
+		@maxLife = 0
 		@defence = 0
-		@initmana = 3	#戦闘開始時のマナ数
-		@initdeck = []
+		@initMana = 3	#戦闘開始時のマナ数
+		@initDeck = []
 		@deck = []
 		@hand = []
-		@discardpile = []
-		@initnumofhandcard = 0
-		@initnumofdrawcard = 4
+		@discardPile = []
+		@initNumofHandCard = 0
+		@initNumOfDrawCard = 4
 	    case name
-        when 'fighter'
-			@maxlife = 100
+        when 'Fighter'
+			@maxLife = 40
 			6.times do
-				@initdeck.push(Card.new('sword'))
+				@initDeck.push(Card.new('Sword'))
 			end
 			4.times do
-				@initdeck.push(Card.new('shield'))
+				@initDeck.push(Card.new('Shield'))
 			end
-        when 'ghost'
-			@maxlife = 100
-			@initmana = 1
-			@initnumofhandcard = 0
-			@initnumofdrawcard = 1
+        when 'A Ghost'
+			@maxLife = 50
+			@initMana = 1
+			@initNumofHandCard = 0
+			@initNumOfDrawCard = 1
 			1.times do
-				@initdeck.push(Card.new('fire'))
+				@initDeck.push(Card.new('Fire'))
+			end
+		when 'The King of Ghost'
+			@maxLife = 100
+			@initMana = 1
+			@initNumofHandCard = 0
+			@initNumOfDrawCard = 1
+			1.times do
+				@initDeck.push(Card.new('Fire'))
+			end
+			1.times do
+				@initDeck.push(Card.new('Flame'))
 			end
 		end
-		@life = @maxlife
+		@life = @maxLife
 	end
-	def battleprep
-		@maxmana = @initmana	#戦闘中でターン開始時のマナ数
-		@mana = @maxmana
-		@deck = @initdeck.dup
-		@numofhandcard = @initnumofhandcard
-		@numofdrawcard = @initnumofdrawcard
+	def battlePrep
+		@maxMana = @initMana	#戦闘中でターン開始時のマナ数
+		@mana = @maxMana
+		@deck = @initDeck.dup
+		@numOfHandCard = @initNumofHandCard
+		@numOfDrawCard = @initNumOfDrawCard
 		@deck.shuffle!
-		@discardpile = []
-		@numofhandcard.times do
+		@discardPile = []
+		@numOfHandCard.times do
 			self.draw
 		end
 	end
-	def turnbegin
-		@mana = @maxmana
+	def turnBegin
+		@mana = @maxMana
 		@defence = 0
-		@numofdrawcard.times do
+		@numOfDrawCard.times do
 			self.draw
 		end
 	end
-	def turnend
+	def turnEnd
 		@hand.each do |crd|
-			@discardpile.push(crd)
+			@discardPile.push(crd)
 		end
 		@hand = []
 	end
 	def draw
 		if @deck.length == 0
-			@deck = @discardpile.dup.shuffle!
-			@discardpile = []
+			@deck = @discardPile.dup.shuffle!
+			@discardPile = []
 		end
 		if @deck.length > 0
 			@hand.push(@deck.shift)
 		end
 	end
 	def discard(n)
-		@discardpile.push(@hand.delete_at(n))
+		@discardPile.push(@hand.delete_at(n))
 	end
 	def disp
-		puts "name: " + @name
-		puts "life: " + @life.to_s
-		puts "defence: " + @defence.to_s
-		puts "deck: " + @deck.length.to_s + " cards"
-		puts "discard: " + @discardpile.length.to_s + " cards"
-		puts "mana: " + @mana.to_s + "/" + @maxmana.to_s
-		puts "hand:"
+		puts "Name: " + @name
+		puts "Life: " + @life.to_s
+		puts "Defence: " + @defence.to_s
+		puts "Deck: " + @deck.length.to_s + " cards"
+		puts "Discard: " + @discardPile.length.to_s + " cards"
+		puts "Mana: " + @mana.to_s + "/" + @maxMana.to_s
+		puts "Hand:"
 		i = 0
 		@hand.each do |crd|
 			i = i + 1
-			puts "(" + i.to_s + ") " + crd.strdisp
+			puts "(" + i.to_s + ") " + crd.text
 		end
 	end
 end
 
 class Card
-    attr_accessor :name, :targettype, :targetnum, :cost, :strdisp
+    attr_accessor :name, :targetType, :targetNum, :cost, :text
     def initialize(name)
 		@name = name
-		@targettype = ''	#me, player, otherplayer, enemy, both
-		@targetnum = '1'	#1,n,all
+		@targetType = ''	#me, player, otherplayer, enemy, both
+		@targetNum = '1'	#1,n,all
         @cost = 1
         @atk = 0
         @defence = 0
-        @strdisp = ''
+        @text = ''
 	    case name
-        when 'sword'
-			@targettype = 'enemy'
+        when 'Sword'
+			@targetType = 'enemy'
             @atk = 10
-            @strdisp = @name + " [atk " + @atk.to_s + "] [" + @cost.to_s + "]"
-        when 'shield'
-			@targettype = 'me'
-            @defence = 5
-            @strdisp = @name + " [def " + @defence.to_s + "] [" + @cost.to_s + "]"
-        when 'fire'
-			@targettype = 'enemy'
-            @atk = 7
-            @strdisp = @name + " [atk " + @atk.to_s + "] [" + @cost.to_s + "]"
+            @text = @name + " [atk " + @atk.to_s + "] [" + @cost.to_s + "]"
+        when 'Shield'
+			@targetType = 'me'
+            @defence = 8
+            @text = @name + " [def " + @defence.to_s + "] [" + @cost.to_s + "]"
+        when 'Fire'
+			@targetType = 'enemy'
+            @atk = 10
+            @text = @name + " [atk " + @atk.to_s + "] [" + @cost.to_s + "]"
+        when 'Flame'
+			@targetType = 'enemy'
+            @atk = 20
+            @text = @name + " [atk " + @atk.to_s + "] [" + @cost.to_s + "]"
         end
     end
 	def play(player, target)
@@ -127,173 +142,206 @@ class Card
 	end
 end
 
-#ゲーム初期化
-plyarr = []
-ply = Player.new("fighter")
-plyarr.push(ply)
-enmarr = []
-enm = Player.new("ghost")
-enmarr.push(enm)
-#戦闘準備
-enmarr.each do |enm|
-	enm.battleprep
-end
-plyarr.each do |ply|
-	ply.battleprep
-end
-#戦闘開始
-battleendflg = ""
-while battleendflg == "" do
-	flgAllEnemyDead = true
-	flgAllPlayerDead = true
-	plyarr.each do |ply|
-		#ターン開始処理
-		#mana回復
-		ply.turnbegin
-		maxhandcardcost = 0
-		ply.hand.each do |crd|
-			if crd.cost > maxhandcardcost
-				maxhandcardcost = crd.cost
-			end
+class GM
+	def battle(plyArr, enmArr)
+		#戦闘準備
+		enmArr.each do |enm|
+			enm.battlePrep
 		end
-		while ply.mana >= maxhandcardcost && ply.hand.length > 0
-			#状況表示
-			puts "■相手の状況"
-			enmarr.each do |enm|
-				enm.disp
-				puts
+		plyArr.each do |ply|
+			ply.battlePrep
+		end
+		#戦闘開始
+		battleEndFlg = ""
+		while battleEndFlg == "" do
+			flgAllEnemyDead = true
+			flgAllPlayerDead = true
+			#ターン開始処理
+			plyArr.each do |ply|
+				ply.turnBegin
 			end
-			puts "■自分の状況"
-			plyarr.each do |ply|
-				ply.disp
-				puts
+			enmArr.each do |enm|
+				enm.turnBegin
 			end
-			puts "■行動指示: " + ply.name
-			puts "handの番号を入力してください(0→Skip)"
-			#入力受付
-			strInput = gets.chomp
-			#入力解釈
-			if strInput == "q"
-				battleendflg = "forced termination"
-				break
-			end
-			if strInput == "0"
-				#ターンエンド
-				break
-			end
-			i = 0
-			ply.hand.each do |crd|
-				i = i + 1
-				if i.to_s == strInput
-					if ply.mana >= crd.cost
-						ply.mana = ply.mana - crd.cost
-						case crd.targettype
-						when 'me'
-							crd.play(ply, ply)
-						when 'enemy'
-							#本来はここでターゲットが複数ありうる場合選択する処理が入る
-							crd.play(ply, enm)
-						end
-						ply.discard(i - 1)
-						#勝敗判定
-						flgAllEnemyDead = true
-						enmarr.each do |enm|
-							if enm.life > 0
-								flgAllEnemyDead = false
-							end
-						end
-						flgAllPlayerDead = true
-						plyarr.each do |ply|
-							if ply.life > 0
-								flgAllPlayerDead = false
-							end
-						end
-						if battleendflg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-							break
-						end
+			#ターン
+			plyArr.each do |ply|
+				maxHandCardCost = 0
+				ply.hand.each do |crd|
+					if crd.cost > maxHandCardCost
+						maxHandCardCost = crd.cost
 					end
 				end
-			end
-			if battleendflg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-				break
-			end
-			puts
-		end
-		ply.turnend
-	end
-	if battleendflg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-		break
-	end
-	enmarr.each do |enm|
-		#ターン開始処理
-		#mana回復
-		enm.turnbegin
-		maxhandcardcost = 0
-		enm.hand.each do |crd|
-			if crd.cost > maxhandcardcost
-				maxhandcardcost = crd.cost
-			end
-		end
-		while enm.mana >= maxhandcardcost && enm.hand.length > 0
-			#状況表示
-			puts "■相手の状況"
-			enmarr.each do |enm|
-				enm.disp
-				puts
-			end
-			puts "■自分の状況"
-			plyarr.each do |ply|
-				ply.disp
-				puts
-			end
-			enm.hand.each do |crd|
-				if enm.mana >= crd.cost
-					enm.mana = enm.mana - crd.cost
-					case crd.targettype
-					when 'me'
-						crd.play(enm, enm)
-					when 'enemy'
-						#本来はここでターゲットが複数ありうる場合選択する処理が入る
-						crd.play(enm, ply)
+				while ply.mana >= maxHandCardCost && ply.hand.length > 0
+					#状況表示
+					puts "■相手の状況"
+					enmArr.each do |enm|
+						enm.disp
+						puts
 					end
-					enm.discard(0)
-					#勝敗判定
-					flgAllEnemyDead = true
-					enmarr.each do |enm|
-						if enm.life > 0
-							flgAllEnemyDead = false
-						end
+					puts "■自分の状況"
+					plyArr.each do |ply|
+						ply.disp
+						puts
 					end
-					flgAllPlayerDead = true
-					plyarr.each do |ply|
-						if ply.life > 0
-							flgAllPlayerDead = false
-						end
-					end
-					if battleendflg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
+					puts "■行動指示: " + ply.name
+					puts "Handの番号を入力してください(0→Skip)"
+					#入力受付
+					strInput = gets.chomp
+					#入力解釈
+					if strInput == "q"
+						battleEndFlg = "forced termination"
 						break
 					end
+					if strInput == "0"
+						#ターンエンド
+						break
+					end
+					i = 0
+					ply.hand.each do |crd|
+						i = i + 1
+						if i.to_s == strInput
+							if ply.mana >= crd.cost
+								ply.mana = ply.mana - crd.cost
+								case crd.targetType
+								when 'me'
+									crd.play(ply, ply)
+								when 'enemy'
+									#本来はここでターゲットが複数ありうる場合選択する処理が入る
+									crd.play(ply, enmArr[0])
+								end
+								ply.discard(i - 1)
+								#勝敗判定
+								flgAllEnemyDead = true
+								enmArr.each do |enm|
+									if enm.life > 0
+										flgAllEnemyDead = false
+									end
+								end
+								flgAllPlayerDead = true
+								plyArr.each do |ply|
+									if ply.life > 0
+										flgAllPlayerDead = false
+									end
+								end
+								if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
+									break
+								end
+							end
+						end
+					end
+					if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
+						break
+					end
+					puts
 				end
+				ply.turnEnd
 			end
-			if battleendflg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
+			if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
 				break
 			end
-			puts
+			enmArr.each do |enm|
+				maxHandCardCost = 0
+				enm.hand.each do |crd|
+					if crd.cost > maxHandCardCost
+						maxHandCardCost = crd.cost
+					end
+				end
+				while enm.mana >= maxHandCardCost && enm.hand.length > 0
+					#状況表示
+					puts "■相手の状況"
+					enmArr.each do |enm|
+						enm.disp
+						puts
+					end
+					puts "■自分の状況"
+					plyArr.each do |ply|
+						ply.disp
+						puts
+					end
+					enm.hand.each do |crd|
+						if enm.mana >= crd.cost
+							enm.mana = enm.mana - crd.cost
+							case crd.targetType
+							when 'me'
+								crd.play(enm, enm)
+							when 'enemy'
+								#本来はここでターゲットが複数ありうる場合選択する処理が入る
+								crd.play(enm, plyArr[0])
+							end
+							enm.discard(0)
+							#勝敗判定
+							flgAllEnemyDead = true
+							enmArr.each do |enm|
+								if enm.life > 0
+									flgAllEnemyDead = false
+								end
+							end
+							flgAllPlayerDead = true
+							plyArr.each do |ply|
+								if ply.life > 0
+									flgAllPlayerDead = false
+								end
+							end
+							if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
+								break
+							end
+						end
+					end
+					if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
+						break
+					end
+					puts
+				end
+				enm.turnEnd
+			end
+			#ターン終了処理
+			#勝敗判定
+			if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
+				break
+			end
 		end
-		enm.turnend
-	end
-	#ターン終了処理
-	#勝敗判定
-	if battleendflg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-		break
+		if battleEndFlg == ""
+			if flgAllEnemyDead == true && flgAllPlayerDead == false
+				battleEndFlg = "Player勝利"
+			elsif flgAllEnemyDead == false && flgAllPlayerDead == true
+				battleEndFlg = "Player敗北"
+			elsif flgAllEnemyDead == true && flgAllPlayerDead == true
+				battleEndFlg =  "相打ち"
+			else
+				battleEndFlg "不明"
+			end
+		end
+		puts battleEndFlg
+		battleEndFlg
 	end
 end
-if battleendflg != ""
-	puts battleendflg
-elsif flgAllEnemyDead == true && flgAllPlayerDead == false
-	puts "Player勝利"
-elsif flgAllEnemyDead == false && flgAllPlayerDead == true
-	puts "Player敗北"
-elsif flgAllEnemyDead == true && flgAllPlayerDead == true
-	puts "相打ち"
+
+#ゲーム初期化
+gm = GM.new
+#1面
+puts "Please defeat A Ghost"
+puts "Press ENTER key to continue"
+gets
+plyArr = []
+ply = Player.new("Fighter")
+plyArr.push(ply)
+enmArr = []
+enm = Player.new("A Ghost")
+enmArr.push(enm)
+if gm.battle(plyArr, enmArr) != "Player勝利"
+	puts "再挑戦してください"
+	exit
 end
+#2面
+puts "Please defeat The King of Ghost"
+puts "Press ENTER key to continue"
+gets
+enmArr = []
+enm = Player.new("The King of Ghost")
+enmArr.push(enm)
+if gm.battle(plyArr, enmArr) != "Player勝利"
+	puts "再挑戦してください"
+	exit
+end
+#クリア
+puts "ゲームクリア"
