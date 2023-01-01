@@ -85,25 +85,26 @@ class Player
 end
 
 class Card
-    attr_accessor :name, :target, :cost, :strdisp
+    attr_accessor :name, :targettype, :targetnum, :cost, :strdisp
     def initialize(name)
 		@name = name
-		@target = ''
+		@targettype = ''	#me, player, otherplayer, enemy, both
+		@targetnum = '1'	#1,n,all
         @cost = 1
         @atk = 0
         @defence = 0
         @strdisp = ''
 	    case name
         when 'sword'
-			@target = 'enemy1'
+			@targettype = 'enemy'
             @atk = 10
             @strdisp = @name + " [atk " + @atk.to_s + "] [" + @cost.to_s + "]"
         when 'shield'
-			@target = 'me'
+			@targettype = 'me'
             @defence = 5
             @strdisp = @name + " [def " + @defence.to_s + "] [" + @cost.to_s + "]"
         when 'fire'
-			@target = 'enemy1'
+			@targettype = 'enemy'
             @atk = 7
             @strdisp = @name + " [atk " + @atk.to_s + "] [" + @cost.to_s + "]"
         end
@@ -186,11 +187,12 @@ while battleendflg == "" do
 				if i.to_s == strInput
 					if ply.mana >= crd.cost
 						ply.mana = ply.mana - crd.cost
-						case crd.target
-						when 'enemy1'
-							crd.play(ply, enm)
+						case crd.targettype
 						when 'me'
 							crd.play(ply, ply)
+						when 'enemy'
+							#本来はここでターゲットが複数ありうる場合選択する処理が入る
+							crd.play(ply, enm)
 						end
 						ply.discard(i - 1)
 						#勝敗判定
@@ -247,11 +249,12 @@ while battleendflg == "" do
 			enm.hand.each do |crd|
 				if enm.mana >= crd.cost
 					enm.mana = enm.mana - crd.cost
-					case crd.target
-					when 'enemy1'
-						crd.play(enm, ply)
+					case crd.targettype
 					when 'me'
 						crd.play(enm, enm)
+					when 'enemy'
+						#本来はここでターゲットが複数ありうる場合選択する処理が入る
+						crd.play(enm, ply)
 					end
 					enm.discard(0)
 					#勝敗判定
