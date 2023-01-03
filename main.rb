@@ -1,5 +1,5 @@
 class Player
-	attr_accessor :name, :life, :defence, :hand, :mana, :maxMana
+	attr_accessor :name, :life, :maxLife, :defence, :hand, :mana, :maxMana
 	def initialize(name)
 		@name = name
 		@maxLife = 0
@@ -19,6 +19,17 @@ class Player
 			end
 			4.times do
 				@initDeck.push(Card.new('Shield'))
+			end
+        when 'Healer'
+			@maxLife = 50
+			4.times do
+				@initDeck.push(Card.new('Wand'))
+			end
+			4.times do
+				@initDeck.push(Card.new('Shield'))
+			end
+			2.times do
+				@initDeck.push(Card.new('MercyLight'))
 			end
         when 'A Ghost'
 			@maxLife = 50
@@ -105,16 +116,26 @@ class Card
         @cost = 1
         @atk = 0
         @defence = 0
+		@heal = 0
         @text = ''
 	    case name
         when 'Sword'
 			@targetType = 'enemy'
             @atk = 10
             @text = @name + " [atk " + @atk.to_s + "] [" + @cost.to_s + "]"
+        when 'Wand'
+			@targetType = 'enemy'
+            @atk = 3
+            @text = @name + " [atk " + @atk.to_s + "] [" + @cost.to_s + "]"
         when 'Shield'
 			@targetType = 'me'
             @defence = 8
             @text = @name + " [def " + @defence.to_s + "] [" + @cost.to_s + "]"
+        when 'MercyLight'
+			@targetType = 'otherplayer'
+            @heal = 10
+			@cost = 2
+            @text = @name + " [heal " + @heal.to_s + "] [" + @cost.to_s + "]"
         when 'CandleFlame'
 			@targetType = 'enemy'
             @atk = 6
@@ -132,13 +153,13 @@ class Card
 	def play(player, targetArr)
 		targetArr.each do |target|
 			if @atk != 0
-				#既にターゲットのlifeが0以下になっていればスキップ
+				#死者はスキップ
 				if target.life > 0
 					if target.defence >= @atk
-						puts player.name + " が " + target.name + " に " + @atk.to_s + " の攻撃。" + target.name + " は防御が " + target.defence.to_s + " に減少。"
+						puts player.name + " が " + target.name + " に " + @atk.to_s + " の攻撃。" + target.name + " は防御が " + (target.defence - @atk).to_s + " に減少。"
 						target.defence = target.defence - @atk
 					else
-						puts player.name + " が " + target.name + " に " + @atk.to_s + " の攻撃。" + target.name + " は " + (@atk - target.defence).to_s + " のダメージを受けた。"
+						puts player.name + " が " + target.name + " に " + @atk.to_s + " の攻撃。" + target.name + " のlifeは " + (target.life + target.defence - @atk).to_s + " に減少。"
 						target.life = target.life + target.defence - @atk
 						target.defence = 0
 					end
@@ -147,6 +168,19 @@ class Card
 			if @defence != 0
 				puts player.name + " は防御を " + @defence.to_s + " 増加。"
 				target.defence = target.defence + @defence
+			end
+			if @heal != 0
+				#死者はスキップ
+				#既にターゲットのlifeが最大値になっていればスキップ
+				if target.life > 0 && target.life < target.maxLife
+					if target.life + @heal > target.maxLife
+						puts player.name + " が " + target.name + " のlifeを " + (target.maxLife - target.life).to_s + " 回復し、lifeは " + target.maxLife.to_s + " になった。"
+						target.life = target.maxLife
+					else
+						puts player.name + " が " + target.name + " のlifeを " + @heal.to_s + " 回復し、lifeは " + (target.life + @heal).to_s + " になった。"
+						target.life = target.life + @heal
+					end
+				end
 			end
 		end
 	end
@@ -392,6 +426,15 @@ class GM
 						break
 					end
 					puts
+					maxHandCardCost = 0
+					ply.hand.each do |crd|
+						if crd.cost > maxHandCardCost
+							maxHandCardCost = crd.cost
+						end
+					end
+				end
+				if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
+					break
 				end
 				ply.turnEnd
 			end
@@ -440,6 +483,15 @@ class GM
 						break
 					end
 					puts
+					maxHandCardCost = 0
+					enm.hand.each do |crd|
+						if crd.cost > maxHandCardCost
+							maxHandCardCost = crd.cost
+						end
+					end
+				end
+				if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
+					break
 				end
 				enm.turnEnd
 			end
@@ -468,8 +520,8 @@ end
 #ゲーム初期化
 gm = GM.new
 plyArr = []
-ply = Player.new("Fighter")
-plyArr.push(ply)
+plyArr.push(Player.new("Fighter"))
+plyArr.push(Player.new("Healer"))
 #1面
 puts
 puts
@@ -477,8 +529,7 @@ puts "Please defeat A Ghost"
 puts "Press ENTER key to continue"
 gets
 enmArr = []
-enm = Player.new("A Ghost")
-enmArr.push(enm)
+enmArr.push(Player.new("A Ghost"))
 if gm.battle(plyArr, enmArr) != "Player勝利"
 	puts "再挑戦してください"
 	exit
@@ -504,8 +555,7 @@ puts "Please defeat The King of Ghost"
 puts "Press ENTER key to continue"
 gets
 enmArr = []
-enm = Player.new("The King of Ghost")
-enmArr.push(enm)
+enmArr.push(Player.new("The King of Ghost"))
 if gm.battle(plyArr, enmArr) != "Player勝利"
 	puts "再挑戦してください"
 	exit
