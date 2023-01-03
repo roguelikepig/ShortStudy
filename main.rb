@@ -13,7 +13,7 @@ class Player
 		@initNumOfDrawCard = 4
 	    case name
         when 'Fighter'
-			@maxLife = 40
+			@maxLife = 50
 			6.times do
 				@initDeck.push(Card.new('Sword'))
 			end
@@ -26,7 +26,15 @@ class Player
 			@initNumofHandCard = 0
 			@initNumOfDrawCard = 1
 			1.times do
-				@initDeck.push(Card.new('Fire'))
+				@initDeck.push(Card.new('Flame'))
+			end
+        when 'A Tiny Ghost'
+			@maxLife = 20
+			@initMana = 1
+			@initNumofHandCard = 0
+			@initNumOfDrawCard = 1
+			1.times do
+				@initDeck.push(Card.new('CandleFlame'))
 			end
 		when 'The King of Ghost'
 			@maxLife = 100
@@ -34,10 +42,10 @@ class Player
 			@initNumofHandCard = 0
 			@initNumOfDrawCard = 1
 			1.times do
-				@initDeck.push(Card.new('Fire'))
+				@initDeck.push(Card.new('CandleFlame'))
 			end
 			1.times do
-				@initDeck.push(Card.new('Flame'))
+				@initDeck.push(Card.new('HellFlame'))
 			end
 		end
 		@life = @maxLife
@@ -80,27 +88,20 @@ class Player
 		@discardPile.push(@hand.delete_at(n))
 	end
 	def disp
-		puts "Name: " + @name
-		puts "Life: " + @life.to_s
-		puts "Defence: " + @defence.to_s
-		puts "Deck: " + @deck.length.to_s + " cards"
-		puts "Discard: " + @discardPile.length.to_s + " cards"
-		puts "Mana: " + @mana.to_s + "/" + @maxMana.to_s
-		puts "Hand:"
+		puts @name + ' [Life ' + @life.to_s + ', Defence ' + @defence.to_s + ', Mana ' + @mana.to_s + '/' + @maxMana.to_s + ', Deck ' + @deck.length.to_s + ', Discard ' + @discardPile.length.to_s + ']'
 		i = 0
 		@hand.each do |crd|
 			i = i + 1
-			puts "(" + i.to_s + ") " + crd.text
+			puts "\t<" + i.to_s + "> " + crd.text
 		end
 	end
 end
 
 class Card
-    attr_accessor :name, :targetType, :targetNum, :cost, :text
+    attr_accessor :name, :targetType, :cost, :text
     def initialize(name)
 		@name = name
-		@targetType = ''	#me, player, otherplayer, enemy, both
-		@targetNum = '1'	#1,n,all
+		@targetType = ''	#me, player, allplayer, otherplayer, allotherplayer, enemy, allenemy, allother, all, card
         @cost = 1
         @atk = 0
         @defence = 0
@@ -114,35 +115,204 @@ class Card
 			@targetType = 'me'
             @defence = 8
             @text = @name + " [def " + @defence.to_s + "] [" + @cost.to_s + "]"
-        when 'Fire'
+        when 'CandleFlame'
 			@targetType = 'enemy'
-            @atk = 10
+            @atk = 6
             @text = @name + " [atk " + @atk.to_s + "] [" + @cost.to_s + "]"
         when 'Flame'
+			@targetType = 'enemy'
+            @atk = 12
+            @text = @name + " [atk " + @atk.to_s + "] [" + @cost.to_s + "]"
+        when 'HellFlame'
 			@targetType = 'enemy'
             @atk = 20
             @text = @name + " [atk " + @atk.to_s + "] [" + @cost.to_s + "]"
         end
     end
-	def play(player, target)
-		if @atk != 0
-			if target.defence >= @atk
-				puts player.name + " が " + target.name + " に " + @atk.to_s + " の攻撃。" + target.name + " は防御が " + target.defence.to_s + " に減少。"
-				target.defence = target.defence - @atk
-			else
-				puts player.name + " が " + target.name + " に " + @atk.to_s + " の攻撃。" + target.name + " は " + (@atk - target.defence).to_s + " のダメージを受けた。"
-				target.life = target.life + target.defence - @atk
-				target.defence = 0
+	def play(player, targetArr)
+		targetArr.each do |target|
+			if @atk != 0
+				#既にターゲットのlifeが0以下になっていればスキップ
+				if target.life > 0
+					if target.defence >= @atk
+						puts player.name + " が " + target.name + " に " + @atk.to_s + " の攻撃。" + target.name + " は防御が " + target.defence.to_s + " に減少。"
+						target.defence = target.defence - @atk
+					else
+						puts player.name + " が " + target.name + " に " + @atk.to_s + " の攻撃。" + target.name + " は " + (@atk - target.defence).to_s + " のダメージを受けた。"
+						target.life = target.life + target.defence - @atk
+						target.defence = 0
+					end
+				end
 			end
-		end
-		if @defence != 0
-			puts player.name + " は防御を " + @defence.to_s + " 増加。"
-			target.defence = target.defence + @defence
+			if @defence != 0
+				puts player.name + " は防御を " + @defence.to_s + " 増加。"
+				target.defence = target.defence + @defence
+			end
 		end
 	end
 end
 
 class GM
+	def displayScene(plyArr, enmArr)
+		puts "■相手の状況"
+		i = 0
+		enmArr.each do |enm|
+			print "<" + dec_to_a(i) + "> "
+			enm.disp
+			puts
+			i = i + 1
+		end
+		puts "■自分の状況"
+		i = 0
+		plyArr.each do |ply|
+			print "<" + dec_to_A(i) + "> "
+			ply.disp
+			puts
+			i = i + 1
+		end
+	end
+	private def dec_to_a(num)	#0->a, 25->z
+		(num > 25 ? dec26(num / 26) : '') + ('a'.ord + num % 26).chr
+	end
+	private def dec_to_A(num)	#0->A, 25->Z
+		(num > 25 ? dec26(num / 26) : '') + ('A'.ord + num % 26).chr
+	end
+	def targeting(ply, plyArr, enmArr, targetType)
+		#まず入力なしで特定できるケースを先に終わらせる
+		#@targetType = ''	#me, player, allplayer, otherplayer, allotherplayer, enemy, allenemy, allother, all, card
+		case targetType
+		when "me"
+			return [ply]
+		when "player"
+			if plyArr.length == 1
+				return [plyArr[0]]
+			elsif plyArr.length == 2
+				if plyArr[0] == ply
+					return [plyArr[1]]
+				elsif plyArr[1] == ply
+					return [plyArr[0]]
+				else
+					puts "fatal error in targeting"
+					exit
+				end
+			end
+		when "allplayer"
+			return plyarr
+		when "otherplayer"
+			if plyArr.length == 1
+				#otherplayerが存在しない
+				return nil
+			elsif plyArr.length == 2
+				if plyArr[0] == ply
+					return [plyArr[1]]
+				elsif plyArr[1] == ply
+					return [plyArr[0]]
+				else
+					puts "fatal error in targeting"
+					exit
+				end
+			end
+		when "allotherplayer"
+			if plyArr.length == 1
+				#otherplayerが存在しない
+				return nil
+			elsif plyArr.length == 2
+				if plyArr[0] == ply
+					return [plyArr[1]]
+				elsif plyArr[1] == ply
+					return [plyArr[0]]
+				else
+					puts "fatal error in targeting"
+					exit
+				end
+			else
+				rtn = []
+				plyArr.each do |player|
+					if player != ply
+						rtn.append(player)
+					end
+				end
+				return rtn
+			end
+		when "enemy"
+			if enmArr.length == 1
+				return [enmArr[0]]
+			end
+		when "allenemy"
+			return enmArr
+		when "allother"
+			rtn = []
+			plyArr.each do |player|
+				if player != ply
+					rtn.append(player)
+				end
+			end
+			enmArr.each do |e|
+				rtn.append(e)
+			end
+			return rtn
+		when "all"
+			rtn = []
+			plyArr.each do |player|
+				rtn.append(player)
+			end
+			enmArr.each do |e|
+				rtn.append(e)
+			end
+			return rtn
+		end
+		#入力必要なケース
+		rtn = []
+		puts "プレイしたいカードの対象<id>を入力してください"
+		strInput = gets.strip
+		case strInput
+		when /^[0-9]+$/
+			if targetType == "card"
+				i = 0
+				ply.hand.each do |crd|
+					i = i + 1
+					if i.to_s == strInput
+						rtn.append(crd)
+					end
+				end
+			end
+		when /^[a-z]+$/
+			if targetType == "enemy"
+				i = 0
+				enmArr.each do |enm|
+					if dec_to_a(i).to_s == strInput
+						rtn.append(enm)
+					end
+					i = i + 1
+				end
+			end
+		when /^[A-Z]+$/
+			if targetType == "player"
+				i = 0
+				plyArr.each do |player|
+					if dec_to_A(i).to_s == strInput
+						rtn.append(player)
+					end
+					i = i + 1
+				end
+			elsif targetType == "otherplayer"
+				i = 0
+				plyArr.each do |player|
+					if player != ply
+						if dec_to_A(i).to_s == strInput
+							rtn.append(player)
+						end
+					end
+					i = i + 1
+				end
+			end
+		end
+		if rtn.length == 0
+			return nil
+		else
+			return rtn
+		end
+	end
 	def battle(plyArr, enmArr)
 		#戦闘準備
 		enmArr.each do |enm|
@@ -171,22 +341,12 @@ class GM
 						maxHandCardCost = crd.cost
 					end
 				end
-				while ply.mana >= maxHandCardCost && ply.hand.length > 0
-					#状況表示
-					puts "■相手の状況"
-					enmArr.each do |enm|
-						enm.disp
-						puts
-					end
-					puts "■自分の状況"
-					plyArr.each do |ply|
-						ply.disp
-						puts
-					end
+				while ply.mana >= maxHandCardCost && ply.hand.length > 0 && ply.life > 0
+					self.displayScene(plyArr, enmArr)
 					puts "■行動指示: " + ply.name
-					puts "Handの番号を入力してください(0→Skip)"
+					puts "プレイするHandの<id>を入力してください(0→Skip)"
 					#入力受付
-					strInput = gets.chomp
+					strInput = gets.strip
 					#入力解釈
 					if strInput == "q"
 						battleEndFlg = "forced termination"
@@ -201,30 +361,29 @@ class GM
 						i = i + 1
 						if i.to_s == strInput
 							if ply.mana >= crd.cost
-								ply.mana = ply.mana - crd.cost
-								case crd.targetType
-								when 'me'
-									crd.play(ply, ply)
-								when 'enemy'
-									#本来はここでターゲットが複数ありうる場合選択する処理が入る
-									crd.play(ply, enmArr[0])
-								end
-								ply.discard(i - 1)
-								#勝敗判定
-								flgAllEnemyDead = true
-								enmArr.each do |enm|
-									if enm.life > 0
-										flgAllEnemyDead = false
+								targetArr = self.targeting(ply, plyArr, enmArr, crd.targetType)
+								if targetArr != nil
+									ply.mana = ply.mana - crd.cost
+									crd.play(ply, targetArr)
+									ply.discard(i - 1)
+									#勝敗判定
+									flgAllEnemyDead = true
+									enmArr.each do |enm|
+										if enm.life > 0
+											flgAllEnemyDead = false
+										end
 									end
-								end
-								flgAllPlayerDead = true
-								plyArr.each do |ply|
-									if ply.life > 0
-										flgAllPlayerDead = false
+									flgAllPlayerDead = true
+									plyArr.each do |ply|
+										if ply.life > 0
+											flgAllPlayerDead = false
+										end
 									end
-								end
-								if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-									break
+									if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
+										break
+									end
+								else
+									puts "有効な対象指定がなされなかったためカードプレイをスキップします"
 								end
 							end
 						end
@@ -246,27 +405,17 @@ class GM
 						maxHandCardCost = crd.cost
 					end
 				end
-				while enm.mana >= maxHandCardCost && enm.hand.length > 0
-					#状況表示
-					puts "■相手の状況"
-					enmArr.each do |enm|
-						enm.disp
-						puts
-					end
-					puts "■自分の状況"
-					plyArr.each do |ply|
-						ply.disp
-						puts
-					end
+				while enm.mana >= maxHandCardCost && enm.hand.length > 0 && enm.life > 0
+					self.displayScene(plyArr, enmArr)
 					enm.hand.each do |crd|
 						if enm.mana >= crd.cost
 							enm.mana = enm.mana - crd.cost
 							case crd.targetType
 							when 'me'
-								crd.play(enm, enm)
+								crd.play(enm, [enm])
 							when 'enemy'
 								#本来はここでターゲットが複数ありうる場合選択する処理が入る
-								crd.play(enm, plyArr[0])
+								crd.play(enm, [plyArr[0]])
 							end
 							enm.discard(0)
 							#勝敗判定
@@ -318,13 +467,15 @@ end
 
 #ゲーム初期化
 gm = GM.new
-#1面
-puts "Please defeat A Ghost"
-puts "Press ENTER key to continue"
-gets
 plyArr = []
 ply = Player.new("Fighter")
 plyArr.push(ply)
+#1面
+puts
+puts
+puts "Please defeat A Ghost"
+puts "Press ENTER key to continue"
+gets
 enmArr = []
 enm = Player.new("A Ghost")
 enmArr.push(enm)
@@ -333,6 +484,22 @@ if gm.battle(plyArr, enmArr) != "Player勝利"
 	exit
 end
 #2面
+puts
+puts
+puts "Please defeat Tiny Ghosts"
+puts "Press ENTER key to continue"
+gets
+enmArr = []
+3.times do
+	enmArr.push(Player.new("A Tiny Ghost"))
+end
+if gm.battle(plyArr, enmArr) != "Player勝利"
+	puts "再挑戦してください"
+	exit
+end
+#3面
+puts
+puts
 puts "Please defeat The King of Ghost"
 puts "Press ENTER key to continue"
 gets
