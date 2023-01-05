@@ -3,10 +3,10 @@ require './card.rb'
 require './gm.rb'
 
 #ゲーム初期化
-gm = GM.new
 plyArr = []
-plyArr.push(Player.new("Fighter"))
-#plyArr.push(Player.new("Healer"))
+#plyArr.append(Player.new("TestPlayer"))
+plyArr.append(Player.new("Fighter"))
+#plyArr.append(Player.new("Healer"))
 #1面
 puts
 puts
@@ -14,8 +14,9 @@ puts "Please defeat A Ghost"
 puts "Press ENTER key to continue"
 gets
 enmArr = []
-enmArr.push(Player.new("A Ghost"))
-if gm.battle(plyArr, enmArr) != "Player勝利"
+enmArr.append(Player.new("A Ghost"))
+gm = GM.new(plyArr, enmArr)
+if gm.battle != "Player勝利"
 	puts "再挑戦してください"
 	exit
 end
@@ -27,9 +28,10 @@ puts "Press ENTER key to continue"
 gets
 enmArr = []
 3.times do
-	enmArr.push(Player.new("A Tiny Ghost"))
+	enmArr.append(Player.new("A Tiny Ghost"))
 end
-if gm.battle(plyArr, enmArr) != "Player勝利"
+gm = GM.new(plyArr, enmArr)
+if gm.battle != "Player勝利"
 	puts "再挑戦してください"
 	exit
 end
@@ -40,8 +42,9 @@ puts "Please defeat The King of Ghost"
 puts "Press ENTER key to continue"
 gets
 enmArr = []
-enmArr.push(Player.new("The King of Ghost"))
-if gm.battle(plyArr, enmArr) != "Player勝利"
+enmArr.append(Player.new("The King of Ghost"))
+gm = GM.new(plyArr, enmArr)
+if gm.battle != "Player勝利"
 	puts "再挑戦してください"
 	exit
 end

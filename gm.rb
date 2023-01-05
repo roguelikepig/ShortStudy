@@ -1,8 +1,13 @@
 class GM
-	def displayScene(plyArr, enmArr)
+	attr_accessor :plyArr, :enmArr
+	def initialize(plyArr, enmArr)
+		@plyArr = plyArr
+		@enmArr = enmArr
+	end
+	def displayScene
 		puts "■相手の状況"
 		i = 0
-		enmArr.each do |enm|
+		@enmArr.each do |enm|
 			print "<" + dec_to_a(i) + "> "
 			enm.disp
 			puts
@@ -10,7 +15,7 @@ class GM
 		end
 		puts "■自分の状況"
 		i = 0
-		plyArr.each do |ply|
+		@plyArr.each do |ply|
 			print "<" + dec_to_A(i) + "> "
 			ply.disp
 			puts
@@ -23,57 +28,57 @@ class GM
 	private def dec_to_A(num)	#0->A, 25->Z
 		(num > 25 ? dec26(num / 26) : '') + ('A'.ord + num % 26).chr
 	end
-	def targeting(ply, plyArr, enmArr, targetType)
+	def targeting(ply, targetType)
 		#まず入力なしで特定できるケースを先に終わらせる
 		#@targetType = ''	#me, player, allplayer, otherplayer, allotherplayer, enemy, allenemy, allother, all, card
 		case targetType
 		when "me"
 			return [ply]
 		when "player"
-			if plyArr.length == 1
-				return [plyArr[0]]
-			elsif plyArr.length == 2
-				if plyArr[0] == ply
-					return [plyArr[1]]
-				elsif plyArr[1] == ply
-					return [plyArr[0]]
+			if @plyArr.length == 1
+				return [@plyArr[0]]
+			elsif @plyArr.length == 2
+				if @plyArr[0] == ply
+					return [@plyArr[1]]
+				elsif @plyArr[1] == ply
+					return [@plyArr[0]]
 				else
 					puts "fatal error in targeting"
 					exit
 				end
 			end
 		when "allplayer"
-			return plyarr
+			return @plyarr
 		when "otherplayer"
-			if plyArr.length == 1
+			if @plyArr.length == 1
 				#otherplayerが存在しない
 				return nil
-			elsif plyArr.length == 2
-				if plyArr[0] == ply
-					return [plyArr[1]]
-				elsif plyArr[1] == ply
-					return [plyArr[0]]
+			elsif @plyArr.length == 2
+				if @plyArr[0] == ply
+					return [@plyArr[1]]
+				elsif @plyArr[1] == ply
+					return [@plyArr[0]]
 				else
 					puts "fatal error in targeting"
 					exit
 				end
 			end
 		when "allotherplayer"
-			if plyArr.length == 1
+			if @plyArr.length == 1
 				#otherplayerが存在しない
 				return nil
-			elsif plyArr.length == 2
-				if plyArr[0] == ply
-					return [plyArr[1]]
-				elsif plyArr[1] == ply
-					return [plyArr[0]]
+			elsif @plyArr.length == 2
+				if @plyArr[0] == ply
+					return [@plyArr[1]]
+				elsif @plyArr[1] == ply
+					return [@plyArr[0]]
 				else
 					puts "fatal error in targeting"
 					exit
 				end
 			else
 				rtn = []
-				plyArr.each do |player|
+				@plyArr.each do |player|
 					if player != ply
 						rtn.append(player)
 					end
@@ -81,29 +86,29 @@ class GM
 				return rtn
 			end
 		when "enemy"
-			if enmArr.length == 1
-				return [enmArr[0]]
+			if @enmArr.length == 1
+				return [@enmArr[0]]
 			end
 		when "allenemy"
-			return enmArr
+			return @enmArr
 		when "allother"
 			rtn = []
-			plyArr.each do |player|
+			@plyArr.each do |player|
 				if player != ply
 					rtn.append(player)
 				end
 			end
-			enmArr.each do |e|
-				rtn.append(e)
+			@enmArr.each do |enemy|
+				rtn.append(enemy)
 			end
 			return rtn
 		when "all"
 			rtn = []
-			plyArr.each do |player|
+			@plyArr.each do |player|
 				rtn.append(player)
 			end
-			enmArr.each do |e|
-				rtn.append(e)
+			@enmArr.each do |enemy|
+				rtn.append(enemy)
 			end
 			return rtn
 		end
@@ -125,7 +130,7 @@ class GM
 		when /^[a-z]+$/
 			if targetType == "enemy"
 				i = 0
-				enmArr.each do |enm|
+				@enmArr.each do |enm|
 					if dec_to_a(i).to_s == strInput
 						rtn.append(enm)
 					end
@@ -135,7 +140,7 @@ class GM
 		when /^[A-Z]+$/
 			if targetType == "player"
 				i = 0
-				plyArr.each do |player|
+				@plyArr.each do |player|
 					if dec_to_A(i).to_s == strInput
 						rtn.append(player)
 					end
@@ -143,7 +148,7 @@ class GM
 				end
 			elsif targetType == "otherplayer"
 				i = 0
-				plyArr.each do |player|
+				@plyArr.each do |player|
 					if player != ply
 						if dec_to_A(i).to_s == strInput
 							rtn.append(player)
@@ -159,28 +164,28 @@ class GM
 			return rtn
 		end
 	end
-	def battle(plyArr, enmArr)
+	#バトル処理
+	#戻り値: String→"", "Player勝利", "Player敗北", "相打ち"
+	def battle
 		#戦闘準備
-		enmArr.each do |enm|
+		@enmArr.each do |enm|
 			enm.battlePrep
 		end
-		plyArr.each do |ply|
+		@plyArr.each do |ply|
 			ply.battlePrep
 		end
 		#戦闘開始
 		battleEndFlg = ""
 		while battleEndFlg == "" do
-			flgAllEnemyDead = true
-			flgAllPlayerDead = true
 			#ターン開始処理
-			plyArr.each do |ply|
+			@plyArr.each do |ply|
 				ply.turnBegin
 			end
-			enmArr.each do |enm|
+			@enmArr.each do |enm|
 				enm.turnBegin
 			end
 			#ターン
-			plyArr.each do |ply|
+			@plyArr.each do |ply|
 				minHandCardCost = 10000
 				ply.hand.each do |crd|
 					if crd.cost < minHandCardCost
@@ -188,16 +193,12 @@ class GM
 					end
 				end
 				while ply.mana >= minHandCardCost && ply.hand.length > 0 && ply.life > 0
-					self.displayScene(plyArr, enmArr)
+					self.displayScene
 					puts "■行動指示: " + ply.name
 					puts "プレイするHandの<id>を入力してください(0→Skip)"
 					#入力受付
 					strInput = gets.strip
 					#入力解釈
-					if strInput == "q"
-						battleEndFlg = "forced termination"
-						break
-					end
 					if strInput == "0"
 						#ターンエンド
 						break
@@ -207,36 +208,23 @@ class GM
 						i = i + 1
 						if i.to_s == strInput
 							if ply.mana >= crd.cost
-								targetArr = self.targeting(ply, plyArr, enmArr, crd.targetType)
+								targetArr = self.targeting(ply, crd.targetType)
 								if targetArr != nil
 									ply.mana = ply.mana - crd.cost
 									crd.play(ply, targetArr)
 									ply.discard(i - 1)
 									#勝敗判定
-									flgAllEnemyDead = true
-									enmArr.each do |enm|
-										if enm.life > 0
-											flgAllEnemyDead = false
-										end
-									end
-									flgAllPlayerDead = true
-									plyArr.each do |ply|
-										if ply.life > 0
-											flgAllPlayerDead = false
-										end
-									end
-									if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-										break
-									end
+									(battleEndFlg = judgeBattleEnd) if battleEndFlg == "" 
+									break if battleEndFlg != ""
 								else
 									puts "有効な対象指定がなされなかったためカードプレイをスキップします"
 								end
 							end
 						end
 					end
-					if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-						break
-					end
+					#勝敗判定
+					(battleEndFlg = judgeBattleEnd) if battleEndFlg == "" 
+					break if battleEndFlg != ""
 					puts
 					minHandCardCost = 10000
 					ply.hand.each do |crd|
@@ -245,15 +233,18 @@ class GM
 						end
 					end
 				end
-				if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-					break
-				end
+				#勝敗判定
+				(battleEndFlg = judgeBattleEnd) if battleEndFlg == "" 
+				break if battleEndFlg != ""
 				ply.turnEnd
+				#勝敗判定
+				(battleEndFlg = judgeBattleEnd) if battleEndFlg == "" 
+				break if battleEndFlg != ""
 			end
-			if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-				break
-			end
-			enmArr.each do |enm|
+			#勝敗判定
+			(battleEndFlg = judgeBattleEnd) if battleEndFlg == "" 
+			break if battleEndFlg != ""
+			@enmArr.each do |enm|
 				minHandCardCost = 10000
 				enm.hand.each do |crd|
 					if crd.cost < minHandCardCost
@@ -261,7 +252,7 @@ class GM
 					end
 				end
 				while enm.mana >= minHandCardCost && enm.hand.length > 0 && enm.life > 0
-					self.displayScene(plyArr, enmArr)
+					self.displayScene
 					enm.hand.each do |crd|
 						if enm.mana >= crd.cost
 							enm.mana = enm.mana - crd.cost
@@ -270,30 +261,17 @@ class GM
 								crd.play(enm, [enm])
 							when 'enemy'
 								#本来はここでターゲットが複数ありうる場合選択する処理が入る
-								crd.play(enm, [plyArr[0]])
+								crd.play(enm, [@plyArr[0]])
 							end
 							enm.discard(0)
 							#勝敗判定
-							flgAllEnemyDead = true
-							enmArr.each do |enm|
-								if enm.life > 0
-									flgAllEnemyDead = false
-								end
-							end
-							flgAllPlayerDead = true
-							plyArr.each do |ply|
-								if ply.life > 0
-									flgAllPlayerDead = false
-								end
-							end
-							if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-								break
-							end
+							(battleEndFlg = judgeBattleEnd) if battleEndFlg == "" 
+							break if battleEndFlg != ""
 						end
 					end
-					if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-						break
-					end
+					#勝敗判定
+					(battleEndFlg = judgeBattleEnd) if battleEndFlg == "" 
+					break if battleEndFlg != ""
 					puts
 					minHandCardCost = 10000
 					enm.hand.each do |crd|
@@ -302,29 +280,46 @@ class GM
 						end
 					end
 				end
-				if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-					break
-				end
+				#勝敗判定
+				(battleEndFlg = judgeBattleEnd) if battleEndFlg == "" 
+				break if battleEndFlg != ""
 				enm.turnEnd
+				#勝敗判定
+				(battleEndFlg = judgeBattleEnd) if battleEndFlg == "" 
+				break if battleEndFlg != ""
 			end
-			#ターン終了処理
 			#勝敗判定
-			if battleEndFlg != "" || flgAllEnemyDead == true || flgAllPlayerDead == true
-				break
-			end
-		end
-		if battleEndFlg == ""
-			if flgAllEnemyDead == true && flgAllPlayerDead == false
-				battleEndFlg = "Player勝利"
-			elsif flgAllEnemyDead == false && flgAllPlayerDead == true
-				battleEndFlg = "Player敗北"
-			elsif flgAllEnemyDead == true && flgAllPlayerDead == true
-				battleEndFlg =  "相打ち"
-			else
-				battleEndFlg "不明"
-			end
+			(battleEndFlg = judgeBattleEnd) if battleEndFlg == "" 
+			break if battleEndFlg != ""
 		end
 		puts battleEndFlg
+		battleEndFlg
+	end
+	#バトル終了条件判定
+	#戻り値: String→"", "Player勝利", "Player敗北", "相打ち"
+	def judgeBattleEnd
+		battleEndFlg = ""
+		flgAllEnemyDead = true
+		@enmArr.each do |enm|
+			if enm.life > 0
+				flgAllEnemyDead = false
+			end
+		end
+		flgAllPlayerDead = true
+		@plyArr.each do |ply|
+			if ply.life > 0
+				flgAllPlayerDead = false
+			end
+		end
+		if flgAllEnemyDead == true && flgAllPlayerDead == false
+			battleEndFlg = "Player勝利"
+		elsif flgAllEnemyDead == false && flgAllPlayerDead == true
+			battleEndFlg = "Player敗北"
+		elsif flgAllEnemyDead == true && flgAllPlayerDead == true
+			battleEndFlg = "相打ち"
+		else
+			battleEndFlg = ""
+		end
 		battleEndFlg
 	end
 end
