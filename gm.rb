@@ -1,11 +1,83 @@
 class GM
 	attr_accessor :plyArr, :enmArr
-	def initialize(plyArr, enmArr)
-		@plyArr = plyArr
-		@enmArr = enmArr
+	def initialize(startCharacterNameArr, enemySetArr)
+		@startCharacterNameArr = startCharacterNameArr
+		@enemySetArr = enemySetArr
+		@plyArr = []
+		@enmArr = []
+	end
+	def startGame
+		#プレイヤーキャラクター選択
+		puts "Please choose your Character(s)."
+		i = 0
+		@startCharacterNameArr.each do |chrNameArr|
+			i = i + 1
+			print '(' + i.to_s + ') '
+			j = 0
+			chrNameArr.each do |chrName|
+				if j > 0
+					print ', '
+				end
+				print chrName
+				j = j + 1
+			end
+			puts
+		end
+		puts
+		strInput = gets.strip
+		if strInput =~ /^[0-9]+$/
+			if @startCharacterNameArr.length >= strInput.to_i
+				@startCharacterNameArr[strInput.to_i - 1].each do |chrName|
+					@plyArr.append(Player.new(chrName))
+				end
+			end
+		end
+		if @plyArr.length == 0
+			puts "プレイヤーキャラクター選択が正しくありませんでした。やり直してください"
+			exit
+		end
+		print "You choice is "
+		i = 0
+		@plyArr.each do |ply|
+			if i > 0
+				print ', '
+			end
+			print ply.name
+			i = i + 1
+		end
+		puts
+		puts "Good luck."
+		#ステージループ
+		i = 0
+		@enemySetArr.each do |enmNameArr|
+			@enmArr = []
+			i = i + 1
+			puts
+			puts "Stage #" + i.to_s
+			print "Please defeat "
+			j = 0
+			enmNameArr.each do |enmName|
+				if j > 0
+					print ', '
+				end
+				print enmName
+				@enmArr.append(Player.new(enmName))
+				j = j + 1
+			end
+			puts
+			puts
+			if self.battle != "Player勝利"
+				puts "再挑戦してください"
+				exit
+			end
+		end
+		#クリア
+		puts
+		puts "You have completed your mission."
+		return i - 1
 	end
 	def displayScene
-		puts "■相手の状況"
+		puts "#Enemy"
 		i = 0
 		@enmArr.each do |enm|
 			print "<" + dec_to_a(i) + "> "
@@ -13,7 +85,7 @@ class GM
 			puts
 			i = i + 1
 		end
-		puts "■自分の状況"
+		puts "#You"
 		i = 0
 		@plyArr.each do |ply|
 			print "<" + dec_to_A(i) + "> "

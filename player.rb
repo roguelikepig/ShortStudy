@@ -133,7 +133,10 @@ class Player
 		@discardPile.append(@hand.delete_at(n))
 	end
 	def disp
-		puts @name + ' [Life ' + @life.to_s + ', Defence ' + @defence.to_s + ', Mana ' + @mana.to_s + '/' + @maxMana.to_s + ', Deck ' + @deck.length.to_s + ', Discard ' + @discardPile.length.to_s + ']'
+		puts @name + ' [Life ' + @life.to_s + '/' + @maxLife.to_s +  ', Defence ' + @defence.to_s + ', Mana ' + @mana.to_s + '/' + @maxMana.to_s + ', Deck ' + @deck.length.to_s + ', Discard ' + @discardPile.length.to_s + ']'
+        if @poison > 0
+            puts 'Poisoned Lv ' + @poison.to_s
+        end
         if @slackenerPeriod > 0
             puts 'Slackened in ' + @slackenerPeriod.to_s + ' turn'
         end
