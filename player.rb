@@ -1,7 +1,42 @@
 class Player
-	attr_accessor :name, :life, :maxLife, :defence, :poison, :slackenerPeriod, :hand, :mana, :maxMana
+	CharacterNameArrArr = [
+		#1行目がアカウント新規作成時の初期キャラクター（群）となる。
+		#各行1セル目はその行のキャラクター群の呼び名
+		['Fighter solo', 'Fighter'],
+		['Fighter + Healer pair', 'Fighter', 'Healer'],
+		['TestScenario', 'TestPlayer'],
+	]
+	NPCNameArrArr = [
+		#各行1セル目はその行のNPC群の呼び名
+		['Light Turret', 'Light Turret'],
+		['Heavy Turret', 'Heavy Turret'],
+	]
+	def self.createCharacterArr(name)
+		plyArr = []
+		0.upto(CharacterNameArrArr.length - 1) do |i|
+			if name == CharacterNameArrArr[i][0]
+				1.upto(CharacterNameArrArr[i].length - 1) do |n|
+					plyArr.push(self.new(CharacterNameArrArr[i][n]))
+				end
+			end
+		end
+		plyArr
+	end
+	def self.createNPCArr(name)
+		npcArr = []
+		0.upto(NPCNameArrArr.length - 1) do |i|
+			if name == NPCNameArrArr[i][0]
+				1.upto(NPCNameArrArr[i].length - 1) do |n|
+					npcArr.push(self.new(NPCNameArrArr[i][n]))
+				end
+			end
+		end
+		npcArr
+	end
+	attr_accessor :name, :role, :life, :maxLife, :defence, :poison, :slackenerPeriod, :hand, :mana, :maxMana
 	def initialize(name)
 		@name = name
+		@role = 'player'	#プレイヤーかNPCかのフラグ
 		@maxLife = 0
 		@defence = 0
 		@poison = 0
